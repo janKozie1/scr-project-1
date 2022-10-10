@@ -7,7 +7,7 @@ type Directions = 'x' | 'y' | 'l' | 'r' | 't' | 'b' | '';
 
 type Keys =  `${SpacingType}${Directions}`;
 
-const toSpacing = (amount: Nullable<number>): string => {
+export const toSpacing = (amount: Nullable<number>): string => {
   const val = amount ?? 0;
 
   return `${val * 4}px`;
@@ -20,6 +20,8 @@ const getSpacing = (keys: Keys[]) => (props: Partial<Props>): string => {
 
 type Props = Readonly<{
   [key in Keys]?: number;
+}> & Readonly<{
+  fullWidth?: boolean;
 }>
 
 const Box = styled.div<Props>`
@@ -32,6 +34,8 @@ const Box = styled.div<Props>`
   padding-right: ${getSpacing(['pr', 'px', 'p'])};
   padding-bottom: ${getSpacing(['pb', 'py', 'p'])};
   padding-left: ${getSpacing(['pl', 'px', 'p'])};
+
+  width: ${({fullWidth = false}) => fullWidth ? '100%' : 'max-content'};
 `
 
 export default Box;

@@ -1,44 +1,21 @@
-import { GenerateRandomTask, GenerateRandomTaskConfig, MakeTickableProcessTask, MakeTickUntil, Nullable, Task, Tasks, TickableProcessTask } from './types'
+import { taskColors } from '../configs/colors';
+import { ExpandedTask, ExpandTask, GenerateRandomTask, GenerateRandomTaskConfig, Tasks } from './types'
 import { getRandomId, getRandomMs, isNil, isNumber } from './utils';
 
 export const getTaskName = (index: number) => `Task ${index}`;
+export const getTaskColor = (index: number) => taskColors[index % taskColors.length];
 
-export const makeTickable: MakeTickableProcessTask = (taskProcesser, tasks) => {
-  let prevTasks = tasks;
+export const isTaskAvailable = (task: ExpandedTask): boolean => task.timeUntil.availability === 0;
+export const isTaskDone = (task: ExpandedTask): boolean => task.timeUntil.completion === 0;
+export const wasTaskJustCompleted = (task: ExpandedTask): boolean => isTaskDone(task) && task.active;
 
-  const tick: TickableProcessTask = (selectedTasks) => {
-    const currentTasks = isNil(selectedTasks) ? prevTasks : selectedTasks;
-    prevTasks = taskProcesser(currentTasks);
-
-    return prevTasks;
-  }
-
-  return tick;
-}
-
-export const isTaskAvailable = (task: Task): boolean => task.timeUntil.availability === 0;
-export const isTaskDone = (task: Task): boolean => task.timeUntil.completion === 0;
-
-export const makeTickUntil: MakeTickUntil = (tick) => {
-  const recurse: ReturnType<MakeTickUntil> = (tasks, ticks) => {
-    if (tasks.every(isTaskDone) || ticks === 0) {
-      return tasks;
-    }
-
-    return recurse(tick(tasks), isNil(ticks) ? ticks : ticks - 1);
-  }
-
-  return recurse;
-}
-
-export const generateRandomTask: GenerateRandomTask = (config, index) => {
+export const generateRandomTask: GenerateRandomTask = (config) => {
   const availability = getRandomMs(config.availability);
-  const completion = getRandomMs(config.completion, availability);
-  const deadline = getRandomMs(config.deadline, completion);
+  const completion = getRandomMs(config.completion) + availability;
+  const deadline = getRandomMs(config.deadline) + completion;
 
   return ({
     id: getRandomId(),
-    name: getTaskName(index),
     timeUntil: {
       availability,
       completion,
@@ -57,17 +34,9 @@ export function generateRandomTasks(amountOrConfigs: number | GenerateRandomTask
   return amountOrConfigs.map(generateRandomTask);
 }
 
-
-
-
-export const getSoonestAvailableTo = <T extends keyof Task['timeUntil']>(key: T) => (prevTask: Nullable<Task>, currentTask: Task): Nullable<Task> => {
-  if (isNil(prevTask) && !isTaskAvailable(currentTask)) {
-    return null;
-  }
-
-  if (isNil(prevTask)) {
-    return currentTask;
-  }
-
-  return prevTask.timeUntil.deadline <= currentTask.timeUntil.deadline ? prevTask : currentTask;
-}
+export const expandTask: ExpandTask = (task, index) => ({
+  ...task,
+  active: false,
+  name: getTaskName(index),
+  color: getTaskColor(index),
+})

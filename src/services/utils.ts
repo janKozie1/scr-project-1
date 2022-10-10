@@ -15,8 +15,12 @@ export function flow<A, B, C, D, E, F>(_fn1: Fn<A, B>, _fn2?: Fn<B, C>, _fn3?: F
 
 export const getRandomId = () => Math.random().toString(36);
 
-export const getRandomMs = (range: MinMax<Miliseconds>, offset: number = 0) => {
-  return Math.round(Math.random() * (range.max - range.min)) + range.min + offset;
+export const getRandomMs = (range: MinMax<Miliseconds>) => {
+  return Math.round(Math.random() * (range.max - range.min)) + range.min;
 }
 
 export const append = <T>(arg: T) => (arr: T[]): T[] => arr.concat([arg]);
+export const pop = <T>(arr: T[]): T[] => arr.slice(0, arr.length - 1);
+
+export const first = <T>(arr: T[]): T => arr[0];
+export const last = <T>(arr: T[]): T => arr[arr.length - 1];

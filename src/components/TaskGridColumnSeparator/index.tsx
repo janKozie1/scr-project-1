@@ -12,7 +12,7 @@ const TaskGridColumnSeparator = styled.div<Props>`
 
   &::before {
     position: absolute;
-    content: '${({content}) => content}';
+    content: '${({content}) => content}s';
     top: -4px;
     left: 50%;
     transform: translate(-50%, -100%);

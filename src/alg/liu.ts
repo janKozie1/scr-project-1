@@ -1,14 +1,27 @@
 import { flow, isNil } from "../services/utils";
-import { Nullable, ProcessTasks, Task } from "../services/types";
-import { getSoonestAvailableTo } from "../services/tasks";
+import { Nullable, ProcessTasks, ExpandedTask } from "../services/types";
+import { isTaskAvailable, isTaskDone } from "../services/tasks";
+
+export const getSoonest = (prevTask: Nullable<ExpandedTask>, currentTask: ExpandedTask): Nullable<ExpandedTask> => {
+  if (!isTaskAvailable(currentTask) || isTaskDone(currentTask)) {
+    return prevTask;
+  }
+
+  if (isNil(prevTask)) {
+    return currentTask;
+  }
+
+  return prevTask.timeUntil.deadline <= currentTask.timeUntil.deadline ? prevTask : currentTask;
+}
+
 
 type TickDownTimeArg = Readonly<{
-  task: Task;
-  tickTimeUntil: (keyof Task['timeUntil'])[],
+  task: ExpandedTask;
+  tickTimeUntil: (keyof ExpandedTask['timeUntil'])[],
   min?: number;
 }>
 
-const tickDownTime = ({task, tickTimeUntil: keys, min}: TickDownTimeArg): Task => ({
+const tickDownTime = ({task, tickTimeUntil: keys, min}: TickDownTimeArg): ExpandedTask => ({
   ...task,
   timeUntil: {
     ...task.timeUntil,
@@ -21,22 +34,31 @@ const tickDownTime = ({task, tickTimeUntil: keys, min}: TickDownTimeArg): Task =
 
       return [key, Math.max(min, newValue)];
     }))
-  } as Task['timeUntil']
+  } as ExpandedTask['timeUntil']
 })
 
-const updateAvailability = (task: Task) => tickDownTime({task, tickTimeUntil: ['availability'], min: 0});
-
-const updateCompletion = (currentlyProcessing: Nullable<Task>) => (task: Task) => task.id === currentlyProcessing?.id
+const updateAvailability = (task: ExpandedTask) => tickDownTime({task, tickTimeUntil: ['availability'], min: 0});
+const updateCompletion = (currentlyProcessing: Nullable<ExpandedTask>) => (task: ExpandedTask): ExpandedTask => task.id === currentlyProcessing?.id
   ? tickDownTime({task, tickTimeUntil: ['completion'], min: 0})
   : task;
-const updateDeadlines = (task: Task) => task.timeUntil.completion === 0
+const updateDeadlines = (task: ExpandedTask): ExpandedTask => task.timeUntil.completion === 0
   ? task
   : tickDownTime({task, tickTimeUntil: ['deadline']});
+const updateActivity = (currentlyProcessing: Nullable<ExpandedTask>) => (task: ExpandedTask): ExpandedTask => task.id === currentlyProcessing?.id
+  ? {...task, active: true}
+  : {...task, active: false};
 
-const liuAlg: ProcessTasks = (tasks) => tasks.map(flow(
-  updateAvailability,
-  updateCompletion(tasks.reduce<Nullable<Task>>(getSoonestAvailableTo('deadline'), null)),
-  updateDeadlines
-));
+const liuAlg: ProcessTasks = (withoutUpdatedAvailability) => {
+  const tasks = withoutUpdatedAvailability.map(updateAvailability);
+  const currentlyProcessing = tasks.reduce<Nullable<ExpandedTask>>(getSoonest, null);
+  console.log({currentlyProcessing})
+
+
+  return tasks.map(flow(
+    updateCompletion(currentlyProcessing),
+    updateActivity(currentlyProcessing),
+    updateDeadlines
+  ))
+};
 
 export default liuAlg;

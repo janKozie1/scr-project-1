@@ -1,37 +1,43 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 import Task from '../Task';
-import { Tasks } from "../../services/types"
-import { isTaskAvailable } from '../../services/tasks';
+import { ExpandedTasks } from "../../services/types"
 import TaskGridColumnSeparator from '../TaskGridColumnSeparator';
 
 
 const Grid = styled.div`
   display: grid;
-  grid-auto-columns: 150px auto;
+  grid-auto-columns: auto 90px;
   grid-auto-flow: column;
   grid-gap: 4px;
+  width: max-content;
 `
 
 const Column = styled.div`
   display: grid;
-  grid-auto-rows: 50px;
+  grid-auto-rows: 30px;
   grid-auto-flow: row;
   grid-gap: 4px;
 `
 
-const getColumnIds = (row: Tasks, second: number) => `${row.map((task) => task.id).join('')}${second}`
+const getColumnIds = (row: ExpandedTasks, second: number) => `${row.map((task) => task.id).join('')}${second}`
 
 type Props = Readonly<{
-  tasksPerSecond: Tasks[];
+  tasksPerSecond: ExpandedTasks[];
 }>
 
 const TaskGrid = ({ tasksPerSecond }: Props) => {
+  const gridRef = useRef<HTMLDivElement>(null)
+
+  useEffect(()  => {
+  }, [tasksPerSecond])
+
   return (
-    <Grid>
+    <Grid ref={gridRef}>
       {tasksPerSecond.map((tasks, second) => (
         <Fragment  key={getColumnIds(tasks, second)}>
+          <TaskGridColumnSeparator content={second} />
           <Column>
             {tasks.map((task, taskIndex) => (
               <Task
@@ -41,7 +47,6 @@ const TaskGrid = ({ tasksPerSecond }: Props) => {
               />
             ))}
           </Column>
-          <TaskGridColumnSeparator content={second} />
         </Fragment>
       ))}
     </Grid>

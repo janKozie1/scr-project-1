@@ -2,20 +2,25 @@ export type Miliseconds = number;
 
 export type Task = Readonly<{
   id: string;
-  name: string;
   timeUntil: Readonly<{
     availability: Miliseconds;
     completion: Miliseconds;
     deadline: Miliseconds;
   }>;
 }>
+
+export type ExpandedTask = Readonly<{
+  name: string;
+  active: boolean;
+  color: string;
+}> & Task;
+
 export type Tasks = readonly Task[];
+export type ExpandedTasks = readonly ExpandedTask[];
 
-export type ProcessTasks = (tasks: Tasks) => Tasks;
+export type ExpandTask = (task: Task, index: number) => ExpandedTask;
 
-export type TickableProcessTask = (tasks?: Tasks) => Tasks;
-export type MakeTickableProcessTask = (processTasks: ProcessTasks, tasks: Tasks) => TickableProcessTask;
-export type MakeTickUntil = (tickable: TickableProcessTask) => (tasks: Tasks, steps?: number) => Tasks;
+export type ProcessTasks = (tasks: ExpandedTasks) => ExpandedTasks;
 
 export type MinMax<T> = Readonly<{min: T, max: T}>
 export type Nullable<T> = T | null | undefined;
