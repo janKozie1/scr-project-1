@@ -121,7 +121,7 @@ const ConfigurationForm = ({configuration, onSubmit}: Props) => {
           <Columns gap={10}>
             <Label>
               R (min)
-              <input name="r_min" type="number" min="1" />
+              <input name="r_min" type="number" min="0" />
             </Label>
             <Label>
               R (max)

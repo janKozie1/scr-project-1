@@ -28,14 +28,8 @@ export const generateRandomTask: GenerateRandomTask = (config) => {
   })
 }
 
-export function generateRandomTasks(amount: number, config: GenerateRandomTaskConfig): Tasks
-export function generateRandomTasks(configs: GenerateRandomTaskConfig[]): Tasks
-export function generateRandomTasks(amountOrConfigs: number | GenerateRandomTaskConfig[], sharedConfig?: GenerateRandomTaskConfig): Tasks {
-  if (isNumber(amountOrConfigs)) {
-    return isNil(sharedConfig) ? [] : Array.from({length: amountOrConfigs}, () => sharedConfig).map(generateRandomTask);
-  }
-
-  return amountOrConfigs.map(generateRandomTask);
+export function generateRandomTasks(amountOrConfigs: number, config: GenerateRandomTaskConfig): Tasks {
+  return Array.from({length: amountOrConfigs}, () => config).map(generateRandomTask);
 }
 
 export const expandTask: ExpandTask = (task, index) => ({

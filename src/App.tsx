@@ -15,34 +15,47 @@ import Button from './components/Button';
 import Modal from './components/Modal';
 import ConfigurationForm, { Configuration } from './components/ConfigurationForm';
 
+const expandedTasksToTaskState = (expandedTasks: ExpandedTasks): TasksState => ({
+  base: expandedTasks,
+  steps: [liuAlg(expandedTasks)]
+})
+
+const generateTasks = (...args: Parameters<typeof generateRandomTasks>): TasksState => {
+  return expandedTasksToTaskState(generateRandomTasks(...args).map(expandTask));
+}
+
+type TasksState = Readonly<{
+  base: ExpandedTasks;
+  steps: ExpandedTasks[];
+}>
+
 
 const App = () => {
   const [configuring, setConfiguring] = useState(false);
   const [config, setConfig] = useState<Configuration>({
     amount: 3,
-    availability: { min: 1, max: 4},
-    completion: { min: 1, max: 4},
-    deadline: { min: 8, max: 13},
+    availability: { min: 0, max: 3},
+    completion: { min: 2, max: 4},
+    deadline: { min: 5, max: 13},
   });
 
-  const [tasks, setTasks] = useState<ExpandedTasks[]>(() => [generateRandomTasks(config.amount, config).map(expandTask)]);
+  const [tasks, setTasks] = useState<TasksState>(() => generateTasks(config.amount, config));
   const [currentIndex, setCurrentIndex] = useState(0);
-  const prevTasks = useRef<typeof tasks>([]);
+  const prevTasks = useRef<typeof tasks['steps']>([]);
 
-  const setNewTasks = (tasks: Tasks[]) => setTasks(tasks.map(taskGroup => taskGroup.map(expandTask)))
-  const randomize = () => setNewTasks([generateRandomTasks(config.amount, config)]);
+  const randomize = () => setTasks(generateTasks(config.amount, config));
 
   const startConfiguring = () => setConfiguring(true);
   const stopConfiguring = () => setConfiguring(false);
 
-  const tickToEnd = () => setCurrentIndex(tasks.length - 1);
+  const tickToEnd = () => setCurrentIndex(tasks.steps.length - 1);
   const tickToStart = () => setCurrentIndex(0);
   const tickForward = () => {
-    if (tasks.length - 1 === currentIndex) {
-      if (last(tasks).every(isTaskDone)) {
+    if (tasks.steps.length - 1 === currentIndex) {
+      if (last(tasks.steps).every(isTaskDone)) {
         return;
       }
-      setTasks(append(liuAlg(last((tasks)))))
+      setTasks((state) => ({...state, steps: [...state.steps, liuAlg(last((tasks.steps)))]}))
     } else {
       setCurrentIndex(add(1))
     }
@@ -67,23 +80,26 @@ const App = () => {
       return recurse(append(liuAlg(prevStep))(tasks));
     }
 
-    setTasks(recurse);
+    setTasks((state) => ({
+      ...state,
+      steps: recurse(state.steps),
+    }));
   }
 
   const onConfigUpdate = (newConfig: Configuration) => {
-    setNewTasks([generateRandomTasks(newConfig.amount, newConfig)]);
+    setTasks(generateTasks(newConfig.amount, newConfig));
     setConfig(newConfig)
     setConfiguring(false)
   }
 
   useEffect(() => {
-    if (tasks.length !== prevTasks.current.length) {
-      setCurrentIndex(tasks.length - 1);
+    if (tasks.steps.length !== prevTasks.current.length) {
+      setCurrentIndex(tasks.steps.length - 1);
     }
   }, [tasks])
 
   useEffect(() => {
-    prevTasks.current = tasks;
+    prevTasks.current = tasks.steps;
   }, [tasks]);
 
   return (
@@ -106,7 +122,7 @@ const App = () => {
                 <Button onClick={randomize}>{'Randomize'}</Button>
                 <Button onClick={solve}>{'Solve'}</Button>
               </Columns>
-              <TasksTable tasks={first(tasks)} />
+              <TasksTable tasks={tasks.base} />
             </Rows>
             <Rows gap={4} center hideOverflow>
               <h3>Tasks timeline:</h3>
@@ -123,7 +139,7 @@ const App = () => {
                 </Box>
                 <RowFade>
                   <Box mt={10} fullWidth>
-                    <TaskGrid tasksPerSecond={tasks} currentIndex={currentIndex} />
+                    <TaskGrid tasksPerSecond={tasks.steps} currentIndex={currentIndex} />
                   </Box>
                 </RowFade>
               </Box>
