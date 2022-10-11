@@ -33,4 +33,6 @@ export type GenerateRandomTask = (config: GenerateRandomTaskConfig, index: numbe
 
 export type Fn<T, U> = (arg: T) => U;
 
+export type Literal = Record<string, unknown>
+
 export default {}

@@ -12,29 +12,28 @@ import TasksTable from './components/TasksTable';
 import Rows from './components/Rows';
 import RowFade from './components/RowFade';
 import Button from './components/Button';
+import Modal from './components/Modal';
+import ConfigurationForm, { Configuration } from './components/ConfigurationForm';
 
-const config: GenerateRandomTaskConfig = {
-  availability: { min: 1, max: 4},
-  completion: { min: 1, max: 4},
-  deadline: { min: 8, max: 13},
-}
-
-const data = generateRandomTasks(3, config).map(expandTask)
-
-console.log(JSON.stringify(data))
 
 const App = () => {
-  const [tasks, setTasks] = useState<ExpandedTasks[]>(() => [data]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [configuring, setConfiguring] = useState(false);
+  const [config, setConfig] = useState<Configuration>({
+    amount: 3,
+    availability: { min: 1, max: 4},
+    completion: { min: 1, max: 4},
+    deadline: { min: 8, max: 13},
+  });
 
+  const [tasks, setTasks] = useState<ExpandedTasks[]>(() => [generateRandomTasks(config.amount, config).map(expandTask)]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const prevTasks = useRef<typeof tasks>([]);
 
-  console.log(tasks[tasks.length - 1].map(task => (
-    `${task.name}: aval: ${task.timeUntil.availability}, dead ${task.timeUntil.deadline}, compl ${task.timeUntil.completion}`
-  )).join('\n'))
-
   const setNewTasks = (tasks: Tasks[]) => setTasks(tasks.map(taskGroup => taskGroup.map(expandTask)))
-  const randomize = () => setNewTasks([generateRandomTasks(4, config)]);
+  const randomize = () => setNewTasks([generateRandomTasks(config.amount, config)]);
+
+  const startConfiguring = () => setConfiguring(true);
+  const stopConfiguring = () => setConfiguring(false);
 
   const tickToEnd = () => setCurrentIndex(tasks.length - 1);
   const tickToStart = () => setCurrentIndex(0);
@@ -43,7 +42,6 @@ const App = () => {
       if (last(tasks).every(isTaskDone)) {
         return;
       }
-
       setTasks(append(liuAlg(last((tasks)))))
     } else {
       setCurrentIndex(add(1))
@@ -72,6 +70,12 @@ const App = () => {
     setTasks(recurse);
   }
 
+  const onConfigUpdate = (newConfig: Configuration) => {
+    setNewTasks([generateRandomTasks(newConfig.amount, newConfig)]);
+    setConfig(newConfig)
+    setConfiguring(false)
+  }
+
   useEffect(() => {
     if (tasks.length !== prevTasks.current.length) {
       setCurrentIndex(tasks.length - 1);
@@ -84,13 +88,21 @@ const App = () => {
 
   return (
     <StylesProvider>
+      {configuring && (
+        <Modal title={"Configure"} onClose={stopConfiguring}>
+          <ConfigurationForm
+            onSubmit={onConfigUpdate}
+            configuration={config}
+          />
+        </Modal>
+      )}
       <Box mt={6} fullWidth flexDirection="column" alignItems="center">
         <Rows gap={8} center>
           <Rows gap={12} center>
             <Rows gap={4} center>
               <h3>Tasks table:</h3>
               <Columns gap={8}>
-                <Button onClick={randomize}>{'Configure'}</Button>
+                <Button onClick={startConfiguring}>{'Configure'}</Button>
                 <Button onClick={randomize}>{'Randomize'}</Button>
                 <Button onClick={solve}>{'Solve'}</Button>
               </Columns>
@@ -127,3 +139,8 @@ export default App;
 
 
 // const data= JSON.parse('[{"id":"0.dz0y5qpxg5","timeUntil":{"availability":3,"completion":8,"deadline":12},"active":false,"name":"Task 0","color":"#513DB6"},{"id":"0.689g53vg98k","timeUntil":{"availability":2,"completion":7,"deadline":10},"active":false,"name":"Task 1","color":"#349B9B"},{"id":"0.ph3ykk173d","timeUntil":{"availability":3,"completion":7,"deadline":11},"active":false,"name":"Task 2","color":"#CF2670"}]')
+
+
+// console.log(tasks[tasks.length - 1].map(task => (
+//   `${task.name}: aval: ${task.timeUntil.availability}, dead ${task.timeUntil.deadline}, compl ${task.timeUntil.completion}`
+// )).join('\n'))
