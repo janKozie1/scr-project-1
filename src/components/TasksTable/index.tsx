@@ -43,8 +43,8 @@ const TasksTable = ({tasks}: Props) => {
       <Box>D</Box>
       {tasks.map((task) =>{
         const r = task.timeUntil.availability;
-        const p = task.timeUntil.completion - r;
-        const d = task.timeUntil.deadline - p;
+        const p = task.timeUntil.completion;
+        const d = task.timeUntil.deadline;
 
         return  (
           <Fragment key={task.id}>

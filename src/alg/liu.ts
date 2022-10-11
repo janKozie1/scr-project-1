@@ -38,12 +38,10 @@ const tickDownTime = ({task, tickTimeUntil: keys, min}: TickDownTimeArg): Expand
 })
 
 const updateAvailability = (task: ExpandedTask) => tickDownTime({task, tickTimeUntil: ['availability'], min: 0});
+const updateDeadlines = (task: ExpandedTask): ExpandedTask => tickDownTime({task, tickTimeUntil: ['deadline']});
 const updateCompletion = (currentlyProcessing: Nullable<ExpandedTask>) => (task: ExpandedTask): ExpandedTask => task.id === currentlyProcessing?.id
   ? tickDownTime({task, tickTimeUntil: ['completion'], min: 0})
   : task;
-const updateDeadlines = (task: ExpandedTask): ExpandedTask => task.timeUntil.completion === 0
-  ? task
-  : tickDownTime({task, tickTimeUntil: ['deadline']});
 const updateActivity = (currentlyProcessing: Nullable<ExpandedTask>) => (task: ExpandedTask): ExpandedTask => task.id === currentlyProcessing?.id
   ? {...task, active: true}
   : {...task, active: false};
@@ -51,8 +49,6 @@ const updateActivity = (currentlyProcessing: Nullable<ExpandedTask>) => (task: E
 const liuAlg: ProcessTasks = (withoutUpdatedAvailability) => {
   const tasks = withoutUpdatedAvailability.map(updateAvailability);
   const currentlyProcessing = tasks.reduce<Nullable<ExpandedTask>>(getSoonest, null);
-  console.log({currentlyProcessing})
-
 
   return tasks.map(flow(
     updateCompletion(currentlyProcessing),

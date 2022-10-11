@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Nullable } from '../../services/types';
 import { isNil } from '../../services/utils';
 
@@ -7,9 +7,11 @@ type Directions = 'x' | 'y' | 'l' | 'r' | 't' | 'b' | '';
 
 type Keys =  `${SpacingType}${Directions}`;
 
+type FlexKeys = 'center' | 'start' | 'end' | 'flex-start' | 'flex-end' | 'left' | 'right' | 'space-between' | 'space-around' | 'space-evenly';
+type FlexDireciton = 'column' | 'row';
+
 export const toSpacing = (amount: Nullable<number>): string => {
   const val = amount ?? 0;
-
   return `${val * 4}px`;
 }
 
@@ -18,10 +20,21 @@ const getSpacing = (keys: Keys[]) => (props: Partial<Props>): string => {
   return toSpacing(isNil(firstExisting) ? null : props[firstExisting]);
 }
 
+const flexIfKeys = (keys: (keyof FlexProps)[]) => (props: FlexProps) => keys.some((key) => !isNil(props[key]))
+  ? 'flex'
+  : undefined;
+
+type FlexProps = Readonly<{
+  alignItems?: FlexKeys;
+  justifyContent?: FlexKeys;
+  flexDirection?: FlexDireciton;
+}>
+
 type Props = Readonly<{
   [key in Keys]?: number;
-}> & Readonly<{
+}> & FlexProps & Readonly<{
   fullWidth?: boolean;
+  hideOverflow?: boolean;
 }>
 
 const Box = styled.div<Props>`
@@ -36,6 +49,14 @@ const Box = styled.div<Props>`
   padding-left: ${getSpacing(['pl', 'px', 'p'])};
 
   width: ${({fullWidth = false}) => fullWidth ? '100%' : 'max-content'};
+  display: ${flexIfKeys(['alignItems', 'flexDirection', 'justifyContent'])};
+  justify-content: ${({justifyContent}) => justifyContent};
+  align-items: ${({alignItems}) => alignItems};
+  flex-direction: ${({flexDirection}) => flexDirection};
+
+  ${({hideOverflow = false}) => hideOverflow && css`
+    overflow: hidden;
+  `}
 `
 
 export default Box;

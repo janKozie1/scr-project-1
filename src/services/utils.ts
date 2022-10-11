@@ -21,6 +21,9 @@ export const getRandomMs = (range: MinMax<Miliseconds>) => {
 
 export const append = <T>(arg: T) => (arr: T[]): T[] => arr.concat([arg]);
 export const pop = <T>(arr: T[]): T[] => arr.slice(0, arr.length - 1);
+export const concat = <T>(arg: T[]) => (arr: T[]): T[] => arr.concat(arg);
 
 export const first = <T>(arr: T[]): T => arr[0];
 export const last = <T>(arr: T[]): T => arr[arr.length - 1];
+
+export const add = (arg: number) => (arg2: number) => arg + arg2;
