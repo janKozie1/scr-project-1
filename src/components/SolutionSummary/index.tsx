@@ -6,11 +6,23 @@ import { SolutionSummary as SolutionSummaryType } from "../../services/types";
 import Box, { toSpacing } from "../Box";
 import Rows from "../Rows";
 
+const Container = styled.div`
+  max-width: 80%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: ${toSpacing(4)};
+`
+
 const SolutionSummaryTable = styled.div`
   display: grid;
   grid-auto-columns: auto;
   grid-template-rows: repeat(3, auto);
   grid-auto-flow: column;
+
+  padding-bottom: ${toSpacing(5)};
+  max-width: 80%;
+  overflow: auto;
 
   > * {
     border: 1px solid black;
@@ -28,9 +40,10 @@ type Props = Readonly<{
 const SolutionSummary = ({summary}: Props ) => {
   return (
     <Rows gap={4} center>
-      <h5>Lmax = {summary.lMax}</h5>
-      <h5>Optimal order = {summary.optimalOrder.map((task) => abbreviateTaskName(task.name)).join(', ')}</h5>
-
+      <Container>
+        <h5>Lmax = {summary.lMax}</h5>
+        <h5>Optimal order = {summary.optimalOrder.map((task) => abbreviateTaskName(task.name)).join(', ')}</h5>
+      </Container>
       <SolutionSummaryTable>
         <Box></Box>
         <Box>Start</Box>

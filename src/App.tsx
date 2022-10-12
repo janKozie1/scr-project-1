@@ -4,7 +4,7 @@ import liuAlg, { getSolutionSummary, intialLiuAlg, solve as solveLiu } from './a
 
 import { expandTask, generateRandomTasks, isTaskDone } from "./services/tasks";
 import { ExpandedTasks  } from './services/types';
-import { add, last } from './services/utils';
+import { add, first, last } from './services/utils';
 
 import TaskGrid from './components/TaskGrid';
 import StylesProvider from './components/StylesProvider';
@@ -46,7 +46,7 @@ const App = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const prevTasks = useRef<typeof tasks['steps']>([]);
-  const solutionSummary = useMemo(() => getSolutionSummary(tasks.base), [tasks.base]) ;
+  const solutionSummary = useMemo(() => getSolutionSummary(first(tasks.steps)), [first(tasks.steps)]) ;
 
   const randomize = () => setTasks(generateTasks(config.amount, config));
 
@@ -149,11 +149,3 @@ const App = () => {
 }
 
 export default App;
-
-
-// const data= JSON.parse('[{"id":"0.dz0y5qpxg5","timeUntil":{"availability":3,"completion":8,"deadline":12},"active":false,"name":"Task 0","color":"#513DB6"},{"id":"0.689g53vg98k","timeUntil":{"availability":2,"completion":7,"deadline":10},"active":false,"name":"Task 1","color":"#349B9B"},{"id":"0.ph3ykk173d","timeUntil":{"availability":3,"completion":7,"deadline":11},"active":false,"name":"Task 2","color":"#CF2670"}]')
-
-
-// console.log(tasks[tasks.length - 1].map(task => (
-//   `${task.name}: aval: ${task.timeUntil.availability}, dead ${task.timeUntil.deadline}, compl ${task.timeUntil.completion}`
-// )).join('\n'))

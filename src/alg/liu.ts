@@ -79,24 +79,28 @@ export const solve = (expandedTasks: ExpandedTasks[], alg: ProcessTasks = liuAlg
 
 export const getSolutionSummary: GetSolutionSummary = (expandedTasks) => {
   const solved = solve([expandedTasks], (tasks) => liuAlg(tasks, true));
-  const executionOrder = solved.map((tasks) => tasks.find((task) => task.active)).filter(isNotNil);
+  const executionOrder = solved.map((tasks) => tasks.find((task) => task.active));
 
   const executionSummary = executionOrder.reduce<SolutionSummary['executionSummary']>((groups, task, index) => {
-      const prevGroup = last(groups);
-      const rest = pop(groups);
+    if (isNil(task)) {
+      return groups;
+    }
 
-      if (isNil(prevGroup)) {
-        return [{...task, start: index, stop: index + 1}];
-      }
+    const prevGroup = last(groups);
+    const rest = pop(groups);
 
-      if (prevGroup.id === task.id) {
-        return [...rest, { ...prevGroup, stop: index + 1}];
-      }
+    if (isNil(prevGroup)) {
+      return [{...task, start: index, stop: index + 1}];
+    }
+
+    if (prevGroup.id === task.id) {
+      return [...rest, { ...prevGroup, stop: index + 1}];
+    }
 
       return [...groups, { ...task, start: index, stop: index + 1}];
   }, [])
 
-  const optimalOrder = executionOrder.reduce<SolutionSummary['optimalOrder']>((order, task) => {
+  const optimalOrder = executionOrder.filter(isNotNil).reduce<SolutionSummary['optimalOrder']>((order, task) => {
     const prevTask = last(order);
 
     if (isNil(prevTask)) {

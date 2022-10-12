@@ -6,7 +6,6 @@ import { hasTaskReachedDeadline, isTaskAvailable, isTaskDone, wasTaskJustComplet
 
 import { Nullable, ExpandedTask } from "../../services/types"
 import { isNil } from '../../services/utils';
-import Tooltip from '../Tooltip';
 
 type CellProps = Readonly<{
   active?: boolean
@@ -88,11 +87,7 @@ const Task = memo(({task, prevState}: Props) => {
     )
   }
 
-  return (
-    <Tooltip body={null}>
-      <Cell {...task} reachedDeadline={reachedDeadline}>{task.name}</Cell>
-    </Tooltip>
-  )
+  return <Cell {...task} reachedDeadline={reachedDeadline}>{task.name}</Cell>
 })
 
 export default Task;
