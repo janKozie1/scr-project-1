@@ -31,7 +31,7 @@ export type ExpandedTasks = readonly ExpandedTask[];
 
 export type ExpandTask = (task: Task, index: number) => ExpandedTask;
 
-export type ProcessTasks = (tasks: ExpandedTasks, flag?: boolean) => ExpandedTasks;
+export type ProcessTasks = (tasks: ExpandedTasks) => ExpandedTasks;
 
 export type MinMax<T> = Readonly<{min: T, max: T}>
 export type Nullable<T> = T | null | undefined;

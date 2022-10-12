@@ -37,9 +37,7 @@ const tickDownTime = ({task, tickTimeUntil: keys, min}: TickDownTimeArg): Expand
 })
 
 const updateAvailability = (task: ExpandedTask) => tickDownTime({task, tickTimeUntil: ['availability'], min: 0});
-const updateDeadlines = (shouldStopAfterCompletion: boolean) => (task: ExpandedTask): ExpandedTask => shouldStopAfterCompletion && isTaskDone(task)
-  ? task
-  : tickDownTime({task, tickTimeUntil: ['deadline']});
+const updateDeadlines = (task: ExpandedTask): ExpandedTask => tickDownTime({task, tickTimeUntil: ['deadline']})
 const updateCompletion = (currentlyProcessing: Nullable<ExpandedTask>) => (task: ExpandedTask): ExpandedTask => task.id === currentlyProcessing?.id
   ? tickDownTime({task, tickTimeUntil: ['completion'], min: 0})
   : task;
@@ -47,12 +45,12 @@ const updateActivity = (currentlyProcessing: Nullable<ExpandedTask>) => (task: E
   ? {...task, active: true}
   : {...task, active: false};
 
-const liuAlg: ProcessTasks = (withoutUpdatedAvailability, shouldStopAfterCompletion = false) => {
+const liuAlg: ProcessTasks = (withoutUpdatedAvailability) => {
   const tasks = withoutUpdatedAvailability.map(updateAvailability);
   const currentlyProcessing = tasks.reduce<Nullable<ExpandedTask>>(getSoonest, null);
 
   return tasks.map(flow(
-    updateDeadlines(shouldStopAfterCompletion),
+    updateDeadlines,
     updateCompletion(currentlyProcessing),
     updateActivity(currentlyProcessing),
   ))
@@ -78,7 +76,7 @@ export const solve = (expandedTasks: ExpandedTasks[], alg: ProcessTasks = liuAlg
 }
 
 export const getSolutionSummary: GetSolutionSummary = (expandedTasks) => {
-  const solved = solve([expandedTasks], (tasks) => liuAlg(tasks, true));
+  const solved = solve([expandedTasks]);
   const executionOrder = solved.map((tasks) => tasks.find((task) => task.active));
 
   const executionSummary = executionOrder.reduce<SolutionSummary['executionSummary']>((groups, task, index) => {
@@ -114,8 +112,19 @@ export const getSolutionSummary: GetSolutionSummary = (expandedTasks) => {
     return [...order, task];
   }, []);
 
+  const reversedExecutionSummary = executionSummary.reverse();
+  const lMax = expandedTasks.map((task) => {
+    const lastExecutionStep = reversedExecutionSummary.find((t) => t.id === task.id);
+
+    if (isNil(lastExecutionStep)) {
+      return 0;
+    }
+
+    return task.timeUntil.deadline - lastExecutionStep.stop;
+  }).reduce(sum)
+
   return {
-    lMax: last(solved).map((task) => task.timeUntil.deadline).reduce(sum),
+    lMax,
     executionSummary,
     optimalOrder,
   }
