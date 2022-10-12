@@ -1,11 +1,10 @@
-import { Fragment, useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import Task from '../Task';
 import { ExpandedTasks } from "../../services/types"
-import TaskGridColumn from '../TaskGridColumn';
 import { last } from '../../services/utils';
 import { isTaskDone } from '../../services/tasks';
+import TaskGridRenderer from '../TaskGridRenderer';
 
 const gap = 13;
 const cellWidth = 70;
@@ -48,12 +47,11 @@ const Grid = styled.div<GridProps>`
     content: 'End';
     position: absolute;
     right: -4px;
-    top: calc(-5% - 10px);
+    top: calc(0% - 15px);
     transform: translate(50%, -50%);
   }
 `
 
-const getColumnIds = (row: ExpandedTasks, second: number) => `${row.map((task) => task.id).join('')}${second}`
 
 type Props = Readonly<{
   tasksPerSecond: ExpandedTasks[];
@@ -61,27 +59,12 @@ type Props = Readonly<{
 }>
 
 const TaskGrid = ({ tasksPerSecond, currentIndex }: Props) => {
-  const gridRef = useRef<HTMLDivElement>(null)
-
-  useEffect(()  => {
-  }, [tasksPerSecond])
+  const endReached = useMemo(() => last(tasksPerSecond).every(isTaskDone), [tasksPerSecond])
 
   return (
     <GridContainer>
-      <Grid ref={gridRef} currentIndex={currentIndex} endReached={last(tasksPerSecond).every(isTaskDone)}>
-        {tasksPerSecond.map((tasks, second) => (
-          <Fragment key={getColumnIds(tasks, second)}>
-            <TaskGridColumn second={second} gap={gap}>
-              {tasks.map((task, taskIndex) => (
-                <Task
-                  key={task.id}
-                  task={task}
-                  prevState={tasksPerSecond[second - 1]?.[taskIndex]}
-                />
-              ))}
-            </TaskGridColumn>
-          </Fragment>
-        ))}
+      <Grid currentIndex={currentIndex} endReached={endReached}>
+        <TaskGridRenderer tasksPerSecond={tasksPerSecond} gap={gap} />
       </Grid>
     </GridContainer>
   )

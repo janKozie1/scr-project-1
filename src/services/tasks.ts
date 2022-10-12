@@ -1,6 +1,8 @@
 import { taskColors } from '../configs/colors';
 import { ExpandedTask, ExpandTask, GenerateRandomTask, GenerateRandomTaskConfig, Nullable, Tasks } from './types'
-import { getRandomId, getRandomMs, isNil, isNumber } from './utils';
+import { getRandomId, getRandomMs, isNil } from './utils';
+
+export const abbreviateTaskName = (taskName: string) => taskName.split('ask ').join('');
 
 export const getTaskName = (index: number) => `Task ${index}`;
 export const getTaskColor = (index: number) => taskColors[index % taskColors.length];

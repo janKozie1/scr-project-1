@@ -15,12 +15,23 @@ export type ExpandedTask = Readonly<{
   color: string;
 }> & Task;
 
+export type SimplifiedTask = Omit<ExpandedTask, 'timeUntil'>;
+export type TaskWithPeriod = SimplifiedTask & Readonly<{start: number, stop: number}>
+
+export type SolutionSummary = Readonly<{
+  lMax: number;
+  executionSummary: TaskWithPeriod[];
+  optimalOrder: SimplifiedTask[];
+}>
+
+export type GetSolutionSummary = (tasks: ExpandedTasks) => SolutionSummary;
+
 export type Tasks = readonly Task[];
 export type ExpandedTasks = readonly ExpandedTask[];
 
 export type ExpandTask = (task: Task, index: number) => ExpandedTask;
 
-export type ProcessTasks = (tasks: ExpandedTasks) => ExpandedTasks;
+export type ProcessTasks = (tasks: ExpandedTasks, flag?: boolean) => ExpandedTasks;
 
 export type MinMax<T> = Readonly<{min: T, max: T}>
 export type Nullable<T> = T | null | undefined;

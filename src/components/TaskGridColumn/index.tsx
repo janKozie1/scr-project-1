@@ -15,7 +15,7 @@ const TaskGridColumn = styled.div<Props>`
   &::before {
     position: absolute;
     content: '';
-    height: 110%;
+    height: calc(100% + 10px);
     left: -${({gap}) => Math.floor(gap / 2) + 1}px;
     top: 50%;
     transform: translateY(-50%);
@@ -26,7 +26,7 @@ const TaskGridColumn = styled.div<Props>`
   &::after {
     position: absolute;
     content: '${({second}) => second}s';
-    top: calc(-5% - 10px);
+    top: calc(0% - 15px);
     transform: translate(-50%, -50%);
     left: -${({gap}) => Math.floor(gap / 2) - 1}px;
   }

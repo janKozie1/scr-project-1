@@ -1,6 +1,8 @@
 import { Fn, Miliseconds, MinMax } from "./types";
 
 export const isNil = <T>(arg: T | null | undefined): arg is null | undefined => arg === null || arg === undefined;
+export const isNotNil = <T>(arg: T | null | undefined): arg is T => !isNil(arg);
+
 export const isNumber = (arg: unknown): arg is number => typeof arg === 'number' && isFinite(arg);
 
 export function flow<A, B>(_fn1: Fn<A, B>): Fn<A, B>
@@ -26,4 +28,5 @@ export const concat = <T>(arg: T[]) => (arr: T[]): T[] => arr.concat(arg);
 export const first = <T>(arr: T[]): T => arr[0];
 export const last = <T>(arr: T[]): T => arr[arr.length - 1];
 
+export const sum = (arg: number, arg2: number) => arg + arg2;
 export const add = (arg: number) => (arg2: number) => arg + arg2;

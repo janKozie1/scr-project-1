@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import TaskGrid from './components/TaskGrid';
+import { useState, useRef, useEffect, useMemo } from 'react';
 
-import liuAlg from './alg/liu';
+import liuAlg, { getSolutionSummary, intialLiuAlg, solve as solveLiu } from './alg/liu';
+
 import { expandTask, generateRandomTasks, isTaskDone } from "./services/tasks";
-import { ExpandedTasks, GenerateRandomTaskConfig, Tasks } from './services/types';
-import { add, append, first, last } from './services/utils';
+import { ExpandedTasks  } from './services/types';
+import { add, last } from './services/utils';
+
+import TaskGrid from './components/TaskGrid';
 import StylesProvider from './components/StylesProvider';
 import Box from './components/Box';
 import Columns from './components/Columns';
@@ -14,10 +16,12 @@ import RowFade from './components/RowFade';
 import Button from './components/Button';
 import Modal from './components/Modal';
 import ConfigurationForm, { Configuration } from './components/ConfigurationForm';
+import AppContainer from './components/AppContainer';
+import SolutionSummary from './components/SolutionSummary';
 
 const expandedTasksToTaskState = (expandedTasks: ExpandedTasks): TasksState => ({
   base: expandedTasks,
-  steps: [liuAlg(expandedTasks)]
+  steps: [intialLiuAlg(expandedTasks)]
 })
 
 const generateTasks = (...args: Parameters<typeof generateRandomTasks>): TasksState => {
@@ -29,19 +33,20 @@ type TasksState = Readonly<{
   steps: ExpandedTasks[];
 }>
 
-
 const App = () => {
   const [configuring, setConfiguring] = useState(false);
   const [config, setConfig] = useState<Configuration>({
     amount: 3,
     availability: { min: 0, max: 3},
     completion: { min: 2, max: 4},
-    deadline: { min: 5, max: 13},
+    deadline: { min: 3, max: 5},
   });
 
   const [tasks, setTasks] = useState<TasksState>(() => generateTasks(config.amount, config));
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const prevTasks = useRef<typeof tasks['steps']>([]);
+  const solutionSummary = useMemo(() => getSolutionSummary(tasks.base), [tasks.base]) ;
 
   const randomize = () => setTasks(generateTasks(config.amount, config));
 
@@ -69,22 +74,10 @@ const App = () => {
     setCurrentIndex(add(-1))
   }
 
-  const solve = () => {
-    const recurse = (tasks: ExpandedTasks[]): ExpandedTasks[] => {
-      const prevStep = last(tasks);
-
-      if (prevStep.every(isTaskDone)) {
-        return tasks;
-      }
-
-      return recurse(append(liuAlg(prevStep))(tasks));
-    }
-
-    setTasks((state) => ({
-      ...state,
-      steps: recurse(state.steps),
-    }));
-  }
+  const solve = () => setTasks((state) => ({
+    ...state,
+    steps: solveLiu(state.steps),
+  }));
 
   const onConfigUpdate = (newConfig: Configuration) => {
     setTasks(generateTasks(newConfig.amount, newConfig));
@@ -112,8 +105,8 @@ const App = () => {
           />
         </Modal>
       )}
-      <Box mt={6} fullWidth flexDirection="column" alignItems="center">
-        <Rows gap={8} center>
+      <AppContainer>
+        <Rows gap={10} center>
           <Rows gap={12} center>
             <Rows gap={4} center>
               <h3>Tasks table:</h3>
@@ -144,9 +137,13 @@ const App = () => {
                 </RowFade>
               </Box>
             </Rows>
+            <Rows gap={4} center>
+              <h3>Solution summary</h3>
+              <SolutionSummary summary={solutionSummary}/>
+            </Rows>
           </Rows>
         </Rows>
-      </Box>
+      </AppContainer>
     </StylesProvider>
   )
 }

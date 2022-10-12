@@ -1,8 +1,11 @@
+import { memo } from 'react';
+
 import styled, { css } from 'styled-components';
 import { doneTaskColor } from '../../configs/colors';
 import { hasTaskReachedDeadline, isTaskAvailable, isTaskDone, wasTaskJustCompleted } from '../../services/tasks';
 
 import { Nullable, ExpandedTask } from "../../services/types"
+import { isNil } from '../../services/utils';
 import Tooltip from '../Tooltip';
 
 type CellProps = Readonly<{
@@ -66,12 +69,12 @@ type Props = Readonly<{
   prevState: Nullable<ExpandedTask>
 }>
 
-const Task = ({task}: Props) => {
+const Task = memo(({task, prevState}: Props) => {
   const isAvailable = isTaskAvailable(task);
   const isDone = isTaskDone(task);
 
   const wasJustCompleted = wasTaskJustCompleted(task);
-  const reachedDeadline = hasTaskReachedDeadline(task);
+  const reachedDeadline = !isNil(prevState) && hasTaskReachedDeadline(task);
 
   if (!isAvailable) {
     return <Cell />;
@@ -90,6 +93,6 @@ const Task = ({task}: Props) => {
       <Cell {...task} reachedDeadline={reachedDeadline}>{task.name}</Cell>
     </Tooltip>
   )
-}
+})
 
 export default Task;
