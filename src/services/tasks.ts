@@ -40,3 +40,5 @@ export const expandTask: ExpandTask = (task, index) => ({
   name: getTaskName(index),
   color: getTaskColor(index),
 })
+
+export const sortByDeadline = (taskA: ExpandedTask, taskB: ExpandedTask): number => taskA.timeUntil.deadline - taskB.timeUntil.deadline;

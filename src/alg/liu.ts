@@ -45,8 +45,9 @@ const updateActivity = (currentlyProcessing: Nullable<ExpandedTask>) => (task: E
   ? {...task, active: true}
   : {...task, active: false};
 
-const liuAlg: ProcessTasks = (withoutUpdatedAvailability) => {
-  const tasks = withoutUpdatedAvailability.map(updateAvailability);
+const preLiuAlg: ProcessTasks = (tasks) => tasks.map(updateAvailability)
+
+const baseLiuAlg: ProcessTasks = (tasks) => {
   const currentlyProcessing = tasks.reduce<Nullable<ExpandedTask>>(getSoonest, null);
 
   return tasks.map(flow(
@@ -55,6 +56,8 @@ const liuAlg: ProcessTasks = (withoutUpdatedAvailability) => {
     updateActivity(currentlyProcessing),
   ))
 };
+
+const liuAlg = flow(preLiuAlg, baseLiuAlg);
 
 export const intialLiuAlg: ProcessTasks = (tasks) => {
   const currentlyProcessing = tasks.filter(isTaskAvailable).reduce<Nullable<ExpandedTask>>(getSoonest, null);
@@ -96,7 +99,7 @@ export const getSolutionSummary: GetSolutionSummary = (expandedTasks) => {
     }
 
       return [...groups, { ...task, start: index, stop: index + 1}];
-  }, [])
+  }, []);
 
   const optimalOrder = executionOrder.filter(isNotNil).reduce<SolutionSummary['optimalOrder']>((order, task) => {
     const prevTask = last(order);
@@ -112,7 +115,7 @@ export const getSolutionSummary: GetSolutionSummary = (expandedTasks) => {
     return [...order, task];
   }, []);
 
-  const reversedExecutionSummary = executionSummary.reverse();
+  const reversedExecutionSummary = [...executionSummary].reverse();
   const lMax = expandedTasks.map((task) => {
     const lastExecutionStep = reversedExecutionSummary.find((t) => t.id === task.id);
 
