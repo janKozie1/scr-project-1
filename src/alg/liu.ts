@@ -123,8 +123,8 @@ export const getSolutionSummary: GetSolutionSummary = (expandedTasks) => {
       return 0;
     }
 
-    return task.timeUntil.deadline - lastExecutionStep.stop;
-  }).reduce(sum)
+    return (task.timeUntil.deadline - lastExecutionStep.stop) * -1;
+  }).reduce((a, b) => Math.max(a,b))
 
   return {
     lMax,

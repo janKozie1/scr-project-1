@@ -41,7 +41,7 @@ const SolutionSummary = ({summary}: Props ) => {
   return (
     <Rows gap={4} center>
       <Container>
-        <h5>Lmax = {summary.lMax * -1}</h5>
+        <h5>Lmax = {summary.lMax}</h5>
         <h5>Optimal order = {summary.optimalOrder.map((task) => abbreviateTaskName(task.name)).join(', ')}</h5>
       </Container>
       <SolutionSummaryTable>
