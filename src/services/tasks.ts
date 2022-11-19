@@ -17,8 +17,8 @@ export const wasTaskJustMadeAvailable = (task: ExpandedTask, prevTask: Nullable<
 
 export const generateRandomTask: GenerateRandomTask = (config) => {
   const availability = getRandomMs(config.availability);
-  const completion = getRandomMs(config.completion) + availability;
-  const deadline = getRandomMs(config.deadline) + completion;
+  const completion = getRandomMs(config.completion);
+  const deadline = getRandomMs(config.deadline) + completion + availability;
 
   return ({
     id: getRandomId(),

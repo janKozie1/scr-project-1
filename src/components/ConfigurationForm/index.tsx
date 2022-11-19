@@ -131,11 +131,11 @@ const ConfigurationForm = ({configuration, onSubmit}: Props) => {
           <Columns gap={10}>
             <Label>
               D (min)
-              <input name="d_min" type="number" min="1" />
+              <input name="d_min" type="number" min="0" />
             </Label>
             <Label>
               D (max)
-              <input name="d_max" type="number" min="1" />
+              <input name="d_max" type="number" min="0" />
             </Label>
           </Columns>
         </Rows>
